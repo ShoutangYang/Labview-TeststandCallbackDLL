@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> DLL在LabVIEW、Teststand中调用</title>
+    <!--
+    先引入css 和js 载入样式和脚本动作
+    -->
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/league.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <!--
+        标题
+        -->
+        <section class="main-page">
+            <p> DLL、LabVIEW、.NET、Teststand之间的相互调用</p>
+            <span style="text-align: right;font-family: 宋体;font-size: 30px">--Share by 杨寿堂</span>
+        </section>
+        <!--
+        PPT目录
+        -->
+        <section>
+            <p>内容</p>
+            <ul>
+                <li>背景</li>
+                <li>DLL是什么鬼？</li>
+                <li>在LabVIEW中调用DLL</li>
+                <li>在Teststand中调用DLL</li>
+                <li>如何制作DLL</li>
+                <li>练习    Q&A</li>
+            </ul>
+        </section>
+        <!--
+        背景
+        -->
+       <section >
+           <p style="text-align: left">使用DLL的应用：</p>
+           <ol>
+               <li class="fragment grow">无锡607所串口卡调试</li>
+               <li class="fragment grow">富士康iphone耳机测试产线更换NI板卡</li>
+               <li class="fragment grow">615所IDU项目中AFDX板卡驱动</li>
+               <li class="fragment grow">615所AFDX交换机项目中615A加载</li>
+               <li class="fragment grow">调用第三方外部设备</li>
+           </ol>
+       </section>
+        <!--
+        DLL介绍
+        -->
+        <section>
+            <section>
+                <p>{DLL是什么鬼？}</p>
+            </section>
+            <section style="text-align: left">
+                <ui >
+                    <li >Dynameic Link Library 动态连接库</li>
+                    <li>实现共享函数概率的一种方式</li>
+                    <li>多种编程语言来编写</li>
+                    <li>资源共享</li>
+                    <li>节省内存</li>
+                </ui>
+                
+            </section>
+            <section>
+                <p >DLL和exe之间的关系</p>
+                <img src="resource/dll.PNG" alt="">
+            </section>
+            <section>
+
+            </section>
+        </section>
+        <!--
+        如何调用C生成的DLL
+        -->
+        <section>
+            <section>
+                <p>使用LabVIEW如何调用C编写DLL</p>
+            </section>
+
+            <section>
+            <p>牛刀小试</p>
+                <div style="text-align: left">
+            <p> C代码</p>
+                    add.c
+            <pre >
+                #include "math.h"
+                 __declspec(dllexport) int add(int a, int b){
+                    return a + b;
+                }
+            </pre>
+                    add.h
+                    <pre>
+                    #pragma  once;
+                    __declspec(dllexport) int add(int a, int b);
+                    </pre>
+                </div>
+            </section>
+            <section>
+                <p>动手练习，在labview中调用ADD函数.</p>
+            </section>
+            <section>
+                <p>常用的参数类型</p>
+                <ol>
+                    <li>整形</li>
+                    <li>字符串</li>
+                    <li>数组</li>
+                    <li>指针</li>
+                </ol>
+            </section>
+            <section>
+               <p style="font-size: 20px;align-content: left">  GetMyValue.c</p>
+                <pre style="font-size: 15px">
+                #include"math.h"
+                 __declspec(dllexport) void GetMyValue(int *len,int *num,char *str)
+                 {
+                     char strNum[4];
+                     char myString[512];
+                     int length = 20;
+                     *len = length;
+                     for (int i = 0; i < length; i++)
+                     {
+                         num[i] = i;
+                     }
+                     memset(myString, '\0', 512);
+                     itoa(length, strNum, 10);
+                     strcat(myString, "this array length is ");
+                     strcat(myString, strNum);
+                     strcpy(str, myString);
+                 }
+                </pre>
+                  <p style="font-size: 20px;align-content:left"> GetMyValue.h</p>
+                    <pre style="font-size: 15px">
+                        #pragma once;
+                      __declspec(dllexport) int getValue(int *len,int*num, char *str2);
+                    </pre>
+            </section>
+            <section>
+                <p>使用LabVIEW调用GetMyValue函数.</p>
+                <p style="text-align: left">目标</p>
+                <ol>
+                    <li>使用库节点函数指针</li>
+                    <li>使用指针返回数组</li>
+                    <li>使用指针返回字符串</li>
+                </ol>
+            </section>
+        </section>
+        <!--
+        如何调用.NET生成的DLL
+        -->
+        <section>
+            <section>
+                <p>使用LabVIEW如何调用.NET生成的DLL</p>
+            </section>
+            <section>
+                class1.cs
+                <pre style="font-size: 15px;text-align: left">
+                    using System;
+                    using System.Collections.Generic;
+                    using System.Linq;
+                    using System.Text;
+                    namespace demo2
+                    {
+                        public class Class1
+                        {
+                            public int add(int a,int b)
+                            {
+                                return a + b;
+                            }
+                            public void GetValue(ref int length,ref  int []numArray,ref string str)
+                            {
+                                Random ran = new Random();
+                                int ranNum = ran.Next(0, 20);
+                                length = ranNum;
+                                for (int i = 0; i < ranNum; i++)
+                                {
+                                    numArray[i] = i;
+                                }
+                                str = "this array length is " + ranNum.ToString();
+                            }
+                        }
+                    }
+                </pre>
+            </section>
+            <section>
+                <p>练习在LabVIEW中调用.NET生成的DLL</p>
+                <p style="text-align: left">目标</p>
+                <ol>
+                    <li>使用构造函数</li>
+                    <li>访问实例的方法</li>
+                </ol>
+            </section>
+        </section>
+        <!--
+        在TeststandS中的调用DLL
+        -->
+        <section>
+        <section>
+            <p>在Teststand中调用C 生成的DLL</p>
+        </section>
+            <section>
+                <img src="" alt="需要添加图片">
+            </section>
+        <section>
+            <p>在Teststand中调用.NET 生成的DLL</p>
+        </section>
+            <section>
+                <img src="" alt="需要添加图片">
+            </section>
+        </section>
+        <!--
+        如何生成DLL
+        -->
+        <section>
+          <section>
+              <p>那么，如何生成DLL呢？</p>
+          </section>
+            <section>
+                <p>如何用C代码生成DLL?</p>
+                <p>演示</p>
+            </section>
+            <section>
+                <p>如何用.NET生成DLL?</p>
+                <p>演示</p>
+            </section>
+        </section>
+
+        <section>
+            <p>Q&A</p>
+        </section>
+    </div>
+</div>
+<script src="js/reveal.js"></script>
+<script>
+    Reveal.initialize({controls:true,
+        progress:true,
+        slideNumber:'c/t',
+        transition:'default',
+        center:true,
+        help:true,
+
+    });
+</script>
+</body>
+</html>

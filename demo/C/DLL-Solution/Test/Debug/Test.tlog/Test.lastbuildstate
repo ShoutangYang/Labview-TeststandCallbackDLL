@@ -1,0 +1,2 @@
+#TargetFrameworkVersion=v4.0:PlatformToolSet=v120:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native32Bit
+Debug|Win32|D:\学习资料\技术分享\DLL在LV .NET TS之间的相互调用\demo\C\DLL-Solution\|
